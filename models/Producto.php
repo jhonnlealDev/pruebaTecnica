@@ -10,15 +10,18 @@ class Producto
         $this->conexion = Conexion::getInstancia();
     }
 
-    public function insertar($descripcion, $precio, $stock)
-    {
+   public function insertar($descripcion, $precio, $stock) {
+    try {
         $sql = "INSERT INTO productos (descripcion, precio, stock) VALUES (:descripcion, :precio, :stock)";
         $stmt = $this->conexion->prepare($sql);
         $stmt->bindParam(':descripcion', $descripcion, PDO::PARAM_STR);
         $stmt->bindParam(':precio', $precio, PDO::PARAM_STR);
         $stmt->bindParam(':stock', $stock, PDO::PARAM_INT);
         return $stmt->execute();
+    } catch (Exception $e) {
+        return $e->getMessage(); // Esto te dirá exactamente qué falla en la base de datos
     }
+}
 
     public function editar($id, $descripcion, $precio, $stock)
     {
@@ -55,5 +58,6 @@ class Producto
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+    
 }
 ?>

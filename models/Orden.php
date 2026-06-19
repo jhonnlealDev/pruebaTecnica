@@ -48,15 +48,25 @@ class Orden
     }
 
     // Listar las órdenes con el nombre del consumidor (usando INNER JOIN)
-    public function listar()
-    {
-        $sql = "SELECT o.id, c.nombre AS consumidor, o.fecha_orden, o.total 
-                FROM ordenes o 
-                INNER JOIN consumidores c ON o.consumidor_id = c.id 
+    public function listar() {
+        // Ajusta la consulta para traer lo que necesitas ver en la tabla
+        $sql = "SELECT o.id as numero_orden, c.nombre as consumidor, 
+                    o.total, o.fecha_orden
+                FROM ordenes o
+                INNER JOIN consumidores c ON o.consumidor_id = c.id
                 ORDER BY o.id DESC";
-        $stmt = $this->conexion->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $this->conexion->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function mostrar($id) {
+        $sql = "SELECT * FROM ordenes WHERE id = '$id'";
+        return $this->conexion->query($sql)->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function eliminar($id) {
+    $sql = "DELETE FROM ordenes WHERE id = ?";
+    $stmt = $this->conexion->prepare($sql);
+    return $stmt->execute([$id]);
+}
 }
 ?>
