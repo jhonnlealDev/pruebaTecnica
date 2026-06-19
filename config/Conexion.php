@@ -1,46 +1,47 @@
 <?php 
 require_once "global.php";
 
-$conexion = new mysqli(DB_HOST,DB_USERNAME,DB_PASSWORD,DB_NAME);
-
-mysqli_query( $conexion, 'SET NAMES "'.DB_ENCODE.'"');
-
-//Si tenemos un posible error en la conexión lo mostramos
-if (mysqli_connect_errno())
+class Conexion 
 {
-	printf("Falló conexión a la base de datos: %s\n",mysqli_connect_error());
-	exit();
-}
+    // Contenedor de la única instancia de la clase (Singleton)
+    private static $instancia = null;
+    
+    private $pdo;
 
-if (!function_exists('ejecutarConsulta'))
-{
-	function ejecutarConsulta($sql)
-	{
-		global $conexion;
-		$query = $conexion->query($sql);
-		return $query;
-	}
+    private function __construct() 
+    {
+        try {
+            // Se construye el Data Source Name
+            // Se asume que DB_ENCODE en tu global.php es 'utf8mb4' o 'utf8'
+            $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_ENCODE;
+            
+            // Opciones de seguridad y manejo de errores
+            $opciones = [
+                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION, // Lanza excepciones en caso de error SQL
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,       // Retorna los datos como arrays asociativos
+                PDO::ATTR_EMULATE_PREPARES   => false                   // Delega la seguridad de sentencias preparadas a MySQL
+            ];
 
-	function ejecutarConsultaSimpleFila($sql)
-	{
-		global $conexion;
-		$query = $conexion->query($sql);		
-		$row = $query->fetch_assoc();
-		return $row;
-	}
+            $this->pdo = new PDO($dsn, DB_USERNAME, DB_PASSWORD, $opciones);
 
-	function ejecutarConsulta_retornarID($sql)
-	{
-		global $conexion;
-		$query = $conexion->query($sql);		
-		return $conexion->insert_id;			
-	}
+        } catch (PDOException $e) {
+            // Manejo de excepciones en la conexión
+            printf("Falló conexión a la base de datos: %s\n", $e->getMessage());
+            exit();
+        }
+    }
 
-	function limpiarCadena($str)
-	{
-		global $conexion;
-		$str = mysqli_real_escape_string($conexion,trim($str));
-		return htmlspecialchars($str);
-	}
+    // Evitar la clonación del objeto
+    private function __clone() {}
+
+    // Método principal para obtener la conexión desde los Modelos
+    public static function getInstancia() 
+    {
+        if (self::$instancia === null) {
+            self::$instancia = new self();
+        }
+        // Retornamos el objeto PDO listo para usarse
+        return self::$instancia->pdo;
+    }
 }
 ?>

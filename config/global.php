@@ -6,7 +6,7 @@ define("DB_HOST","localhost");
 define("DB_NAME", "prueba_tecnica");
 
 //Usuario de la base de datos
-define("DB_USERNAME", "");
+define("DB_USERNAME", "root");
 
 //Contraseña del usuario de la base de datos
 define("DB_PASSWORD", "");
